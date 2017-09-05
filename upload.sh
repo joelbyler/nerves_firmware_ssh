@@ -39,16 +39,11 @@ echo "Uploading $FILENAME to $DESTINATION..."
 
 [ -f "$FILENAME" ] || (echo "Error: can't find '$FILENAME'"; help)
 
-case "$(uname -s)" in
-    Darwin|FreeBSD|NetBSD|OpenBSD|DragonFly)
-	# BSD stat
-        FILESIZE=$(stat -f %z "$FILENAME")
-        ;;
-    *)
-	# GNU stat
-        FILESIZE=$(stat -c%s "$FILENAME")
-        ;;
-esac
+# Assume GNU stat
+FILESIZE=$(stat -c%s "$FILENAME")
+
+# Check if GNU. If not, then guess BSD stat.
+stat --version | grep GNU >/dev/null || FILESIZE=$(stat -f %z "$FILENAME")
 
 # Workaround for https://bugs.erlang.org/browse/ERL-469
 unset SSH_AUTH_SOCK
